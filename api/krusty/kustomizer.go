@@ -146,11 +146,9 @@ func (b *Kustomizer) applySortOrder(m resmap.ResMap, kt *target.KustTarget) erro
 		pl := &builtins.SortOrderTransformerPlugin{
 			SortOptions: kt.Kustomization().SortOptions,
 		}
-		err := pl.Transform(m)
-		if err != nil {
-			return errors.Wrap(err)
-		}
-	} else if b.options.Reorder == ReorderOptionLegacy || b.options.Reorder == ReorderOptionUnspecified {
+		return errors.Wrap(pl.Transform(m))
+	}
+	if b.options.Reorder == ReorderOptionLegacy || b.options.Reorder == ReorderOptionUnspecified {
 		// Case 2: Sort order set in CLI flag only or not at all.
 		pl := &builtins.SortOrderTransformerPlugin{
 			SortOptions: &types.SortOptions{
@@ -158,14 +156,13 @@ func (b *Kustomizer) applySortOrder(m resmap.ResMap, kt *target.KustTarget) erro
 			},
 		}
 		return errors.Wrap(pl.Transform(m))
-	} else if b.options.Reorder == ReorderOptionAlphabetical {
+	}
+	if b.options.Reorder == ReorderOptionAlphabetical {
 		pl := &builtins.SortOrderTransformerPlugin{
 			SortOptions: &types.SortOptions{
 				Order: types.AlphabeticalSortOrder,
-				// Known defect: this compatibility path does not share the API's
-				// canonical default and gives name precedence over kind.
 				AlphabeticalSortOptions: &types.AlphabeticalSortOptions{
-					FieldOrder: []types.SortField{types.SortFieldName, types.SortFieldKind},
+					FieldOrder: types.DefaultAlphabeticalFieldOrder(),
 				},
 			},
 		}
