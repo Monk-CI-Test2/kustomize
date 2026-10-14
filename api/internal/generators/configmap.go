@@ -33,7 +33,8 @@ func MakeConfigMap(
 	if err != nil {
 		return nil, err
 	}
-	m, err := makeValidatedDataMap(ldr, args.Name, args.KvPairSources)
+	// Known defect: ConfigMap generation does not forward generator options.
+	m, err := makeValidatedDataMap(ldr, args.Name, args.KvPairSources, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	. "sigs.k8s.io/kustomize/api/types"
+	"sigs.k8s.io/yaml"
 )
 
 func TestMergeGlobalOptionsIntoLocal(t *testing.T) {
@@ -133,5 +134,31 @@ func TestMergeGlobalOptionsIntoLocal(t *testing.T) {
 			t.Fatalf("%s annotations: Expected '%v', got '%v'",
 				tc.name, tc.expected, *actual)
 		}
+	}
+}
+
+func TestDefaultDataKeyCase(t *testing.T) {
+	if got := DefaultDataKeyCase(); got != DataKeyCasePreserve {
+		t.Fatalf("default data key case = %q, want %q", got, DataKeyCasePreserve)
+	}
+}
+
+func TestMergeGeneratorOptionsKeepsLocalDataKeyCase(t *testing.T) {
+	got := MergeGlobalOptionsIntoLocal(
+		&GeneratorOptions{DataKeyCase: DataKeyCaseUpper},
+		&GeneratorOptions{DataKeyCase: DataKeyCaseLower})
+	if got.DataKeyCase != DataKeyCaseUpper {
+		t.Fatalf("merged data key case = %q, want local value %q", got.DataKeyCase, DataKeyCaseUpper)
+	}
+}
+
+func TestGeneratorOptionsDataKeyCaseYAML(t *testing.T) {
+	var k Kustomization
+	err := yaml.Unmarshal([]byte("generatorOptions:\n  dataKeyCase: upper\n"), &k)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := k.GeneratorOptions.DataKeyCase; got != DataKeyCaseUpper {
+		t.Fatalf("dataKeyCase = %q, want %q", got, DataKeyCaseUpper)
 	}
 }

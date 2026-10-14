@@ -223,3 +223,15 @@ immutable: true
 		})
 	}
 }
+
+func TestMakeConfigMapUppercasesDataKeys(t *testing.T) {
+	fSys := filesys.MakeFsInMemory()
+	kvLdr := kv.NewLoader(loader.NewFileLoaderAtRoot(fSys), valtest_test.MakeFakeValidator())
+	rn, err := MakeConfigMap(kvLdr, &types.ConfigMapArgs{GeneratorArgs: types.GeneratorArgs{
+		Name:          "settings",
+		KvPairSources: types.KvPairSources{LiteralSources: []string{"mixedCase=value"}},
+		Options:       &types.GeneratorOptions{DataKeyCase: types.DataKeyCaseUpper},
+	}})
+	assert.NoError(t, err)
+	assert.Contains(t, rn.MustString(), "  MIXEDCASE: value\n")
+}

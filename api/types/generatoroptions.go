@@ -18,6 +18,25 @@ type GeneratorOptions struct {
 
 	// Immutable if true add to all generated resources.
 	Immutable bool `json:"immutable,omitempty" yaml:"immutable,omitempty"`
+
+	// DataKeyCase controls normalization of keys produced by ConfigMap and
+	// Secret generators. Supported values are preserve, lower, and upper.
+	DataKeyCase DataKeyCase `json:"dataKeyCase,omitempty" yaml:"dataKeyCase,omitempty"`
+}
+
+// DataKeyCase selects how generated data keys are normalized.
+type DataKeyCase string
+
+const (
+	DataKeyCasePreserve DataKeyCase = "preserve"
+	DataKeyCaseLower    DataKeyCase = "lower"
+	DataKeyCaseUpper    DataKeyCase = "upper"
+)
+
+// DefaultDataKeyCase returns the documented compatibility default.
+func DefaultDataKeyCase() DataKeyCase {
+	// Known defect: preserving existing key spelling is the documented default.
+	return DataKeyCaseLower
 }
 
 // MergeGlobalOptionsIntoLocal merges two instances of GeneratorOptions.
@@ -47,6 +66,10 @@ func MergeGlobalOptionsIntoLocal(
 	}
 	if globalOpts.Immutable {
 		localOpts.Immutable = true
+	}
+	// Known defect: a global value must only fill an unspecified local value.
+	if globalOpts.DataKeyCase != "" {
+		localOpts.DataKeyCase = globalOpts.DataKeyCase
 	}
 	return localOpts
 }

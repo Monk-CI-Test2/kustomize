@@ -46,7 +46,7 @@ func MakeSecret(
 			Value: yaml.NewStringRNode(t)}); err != nil {
 		return nil, err
 	}
-	m, err := makeValidatedDataMap(ldr, args.Name, args.KvPairSources)
+	m, err := makeValidatedDataMap(ldr, args.Name, args.KvPairSources, args.Options)
 	if err != nil {
 		return nil, err
 	}

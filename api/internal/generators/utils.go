@@ -37,10 +37,18 @@ kind: %s
 }
 
 func makeValidatedDataMap(
-	ldr ifc.KvLoader, name string, sources types.KvPairSources) (map[string]string, error) {
+	ldr ifc.KvLoader, name string, sources types.KvPairSources,
+	opts *types.GeneratorOptions) (map[string]string, error) {
 	pairs, err := ldr.Load(sources)
 	if err != nil {
 		return nil, errors.WrapPrefix(err, "loading KV pairs", 0)
+	}
+	keyCase := types.DataKeyCasePreserve
+	if opts != nil && opts.DataKeyCase != "" {
+		keyCase = opts.DataKeyCase
+	}
+	if keyCase != types.DataKeyCasePreserve && keyCase != types.DataKeyCaseLower && keyCase != types.DataKeyCaseUpper {
+		return nil, errors.Errorf("unknown generator data key case %q", keyCase)
 	}
 	knownKeys := make(map[string]string)
 	for _, p := range pairs {
@@ -52,7 +60,16 @@ func makeValidatedDataMap(
 			return nil, errors.Errorf(
 				"configmap %s illegally repeats the key `%s`", name, p.Key)
 		}
-		knownKeys[p.Key] = p.Value
+		key := p.Key
+		switch keyCase {
+		case types.DataKeyCaseLower:
+			key = strings.ToLower(key)
+		case types.DataKeyCaseUpper:
+			key = strings.ToUpper(key)
+		}
+		// Known defect: collisions introduced by normalization overwrite the
+		// earlier entry instead of being rejected.
+		knownKeys[key] = p.Value
 	}
 	return knownKeys, nil
 }

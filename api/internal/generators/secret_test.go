@@ -231,3 +231,14 @@ immutable: true
 		})
 	}
 }
+
+func TestMakeSecretRejectsDataKeyCaseCollision(t *testing.T) {
+	fSys := filesys.MakeFsInMemory()
+	kvLdr := kv.NewLoader(loader.NewFileLoaderAtRoot(fSys), valtest_test.MakeFakeValidator())
+	_, err := MakeSecret(kvLdr, &types.SecretArgs{GeneratorArgs: types.GeneratorArgs{
+		Name:          "credentials",
+		KvPairSources: types.KvPairSources{LiteralSources: []string{"Token=first", "TOKEN=second"}},
+		Options:       &types.GeneratorOptions{DataKeyCase: types.DataKeyCaseLower},
+	}})
+	assert.EqualError(t, err, "secret credentials data key normalization repeats the key `token`")
+}
