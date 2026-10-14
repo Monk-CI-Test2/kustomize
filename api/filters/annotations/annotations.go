@@ -4,6 +4,8 @@
 package annotations
 
 import (
+	"fmt"
+
 	"sigs.k8s.io/kustomize/api/filters/filtersutil"
 	"sigs.k8s.io/kustomize/api/filters/fsslice"
 	"sigs.k8s.io/kustomize/api/types"
@@ -19,6 +21,9 @@ type Filter struct {
 
 	// FsSlice contains the FieldSpecs to locate the namespace field
 	FsSlice types.FsSlice
+
+	// ConflictPolicy controls handling of annotations already present.
+	ConflictPolicy types.AnnotationConflictPolicy
 
 	trackableSetter filtersutil.TrackableSetter
 }
@@ -36,10 +41,16 @@ func (f Filter) Filter(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 	_, err := kio.FilterAll(yaml.FilterFunc(
 		func(node *yaml.RNode) (*yaml.RNode, error) {
 			for _, k := range keys {
+				setValue := f.trackableSetter.SetEntry(k, f.Annotations[k], yaml.NodeTagString)
+				switch f.ConflictPolicy {
+				case types.AnnotationConflictPreserve:
+					setValue = f.trackableSetter.SetEntryIfEmpty(k, f.Annotations[k], yaml.NodeTagString)
+				case types.AnnotationConflictError:
+					setValue = rejectAnnotationConflict(k, f.Annotations[k])
+				}
 				if err := node.PipeE(fsslice.Filter{
-					FsSlice: f.FsSlice,
-					SetValue: f.trackableSetter.SetEntry(
-						k, f.Annotations[k], yaml.NodeTagString),
+					FsSlice:    f.FsSlice,
+					SetValue:   setValue,
 					CreateKind: yaml.MappingNode, // Annotations are MappingNodes.
 					CreateTag:  yaml.NodeTagMap,
 				}); err != nil {
@@ -49,4 +60,13 @@ func (f Filter) Filter(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 			return node, nil
 		})).Filter(nodes)
 	return nodes, err
+}
+
+func rejectAnnotationConflict(key, value string) filtersutil.SetFn {
+	return func(node *yaml.RNode) error {
+		if existing := node.Field(key); !existing.IsNilOrEmpty() {
+			return fmt.Errorf("annotation %q already exists", key)
+		}
+		return filtersutil.SetEntry(key, value, yaml.NodeTagString)(node)
+	}
 }

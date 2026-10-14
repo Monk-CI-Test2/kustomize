@@ -66,6 +66,9 @@ type Kustomization struct {
 	// CommonAnnotations to add to all objects.
 	CommonAnnotations map[string]string `json:"commonAnnotations,omitempty" yaml:"commonAnnotations,omitempty"`
 
+	// CommonAnnotationsOptions controls conflicts with existing annotations.
+	CommonAnnotationsOptions *AnnotationOptions `json:"commonAnnotationsOptions,omitempty" yaml:"commonAnnotationsOptions,omitempty"`
+
 	// Deprecated: Use the Patches field instead, which provides a superset of the functionality of PatchesStrategicMerge.
 	// PatchesStrategicMerge specifies the relative path to a file
 	// containing a strategic merge patch.  Format documented at

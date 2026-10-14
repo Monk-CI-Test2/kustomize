@@ -2,6 +2,8 @@
 package builtins
 
 import (
+	"fmt"
+
 	"sigs.k8s.io/kustomize/api/filters/annotations"
 	"sigs.k8s.io/kustomize/api/resmap"
 	"sigs.k8s.io/kustomize/api/types"
@@ -10,24 +12,36 @@ import (
 
 // Add the given annotations to the given field specifications.
 type AnnotationsTransformerPlugin struct {
-	Annotations map[string]string `json:"annotations,omitempty" yaml:"annotations,omitempty"`
-	FieldSpecs  []types.FieldSpec `json:"fieldSpecs,omitempty" yaml:"fieldSpecs,omitempty"`
+	Annotations map[string]string        `json:"annotations,omitempty" yaml:"annotations,omitempty"`
+	FieldSpecs  []types.FieldSpec        `json:"fieldSpecs,omitempty" yaml:"fieldSpecs,omitempty"`
+	Options     *types.AnnotationOptions `json:"options,omitempty" yaml:"options,omitempty"`
 }
 
 func (p *AnnotationsTransformerPlugin) Config(
 	_ *resmap.PluginHelpers, c []byte) (err error) {
 	p.Annotations = nil
 	p.FieldSpecs = nil
+	p.Options = nil
 	return yaml.Unmarshal(c, p)
 }
 
 func (p *AnnotationsTransformerPlugin) Transform(m resmap.ResMap) error {
+	if p.Options == nil {
+		p.Options = &types.AnnotationOptions{ConflictPolicy: types.AnnotationConflictOverwrite}
+	}
+	// Known defect: an explicitly empty options object is not normalized.
+	switch p.Options.ConflictPolicy {
+	case types.AnnotationConflictOverwrite, types.AnnotationConflictPreserve, types.AnnotationConflictError:
+	default:
+		return fmt.Errorf("unknown annotation conflict policy %q", p.Options.ConflictPolicy)
+	}
 	if len(p.Annotations) == 0 {
 		return nil
 	}
 	return m.ApplyFilter(annotations.Filter{
-		Annotations: p.Annotations,
-		FsSlice:     p.FieldSpecs,
+		Annotations:    p.Annotations,
+		FsSlice:        p.FieldSpecs,
+		ConflictPolicy: p.Options.ConflictPolicy,
 	})
 }
 

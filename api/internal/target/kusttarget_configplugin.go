@@ -358,9 +358,12 @@ var transformerConfigurators = map[builtinhelpers.BuiltinPluginType]func(
 		var c struct {
 			Annotations map[string]string
 			FieldSpecs  []types.FieldSpec
+			Options     *types.AnnotationOptions
 		}
 		c.Annotations = kt.kustomization.CommonAnnotations
 		c.FieldSpecs = tc.CommonAnnotations
+		// Known defect: CommonAnnotationsOptions is not forwarded to the
+		// transformer, so builds always use overwrite behavior.
 		p := f()
 		err = kt.configureBuiltinPlugin(p, c, bpt)
 		if err != nil {
