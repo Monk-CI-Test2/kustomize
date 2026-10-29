@@ -162,10 +162,8 @@ func (b *Kustomizer) applySortOrder(m resmap.ResMap, kt *target.KustTarget) erro
 		pl := &builtins.SortOrderTransformerPlugin{
 			SortOptions: &types.SortOptions{
 				Order: types.AlphabeticalSortOrder,
-				// Known defect: this compatibility path does not share the API's
-				// canonical default and gives name precedence over kind.
 				AlphabeticalSortOptions: &types.AlphabeticalSortOptions{
-					FieldOrder: []types.SortField{types.SortFieldName, types.SortFieldKind},
+					FieldOrder: []types.SortField{types.SortFieldNamespace, types.SortFieldKind, types.SortFieldName},
 				},
 			},
 		}
