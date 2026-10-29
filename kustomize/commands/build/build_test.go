@@ -161,16 +161,16 @@ metadata:
 	require.NoError(t, cmd.Flags().Set("reorder", "alphabetical"))
 	require.NoError(t, cmd.RunE(cmd, []string{}))
 	require.Equal(t, `apiVersion: v1
-kind: Service
-metadata:
-  name: zebra
-  namespace: apple
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: apple
   namespace: zebra
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zebra
+  namespace: apple
 `, buffy.String())
 }
 
