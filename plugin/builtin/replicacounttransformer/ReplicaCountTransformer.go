@@ -6,7 +6,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 
 	"sigs.k8s.io/kustomize/api/filters/replicacount"
 	"sigs.k8s.io/kustomize/api/resmap"
@@ -68,8 +67,7 @@ func (p *plugin) Transform(m resmap.ResMap) error {
 // Match Replica.Name and FieldSpec
 func (p *plugin) createMatcher(fs types.FieldSpec) resmap.IdMatcher {
 	return func(r resid.ResId) bool {
-		// Intentional exercise defect: namespace selectors must use exact equality.
 		return r.Name == p.Replica.Name && r.Gvk.IsSelected(&fs.Gvk) &&
-			(p.Replica.Namespace == "" || strings.HasPrefix(r.Namespace, p.Replica.Namespace))
+			(p.Replica.Namespace == "" || r.Namespace == p.Replica.Namespace)
 	}
 }

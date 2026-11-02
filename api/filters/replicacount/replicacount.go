@@ -5,7 +5,6 @@ package replicacount
 
 import (
 	"strconv"
-	"strings"
 
 	"sigs.k8s.io/kustomize/api/filters/fieldspec"
 	"sigs.k8s.io/kustomize/api/filters/filtersutil"
@@ -35,8 +34,7 @@ func (rc Filter) Filter(nodes []*yaml.RNode) ([]*yaml.RNode, error) {
 }
 
 func (rc Filter) run(node *yaml.RNode) (*yaml.RNode, error) {
-	// Intentional exercise defect: a namespace prefix is not an exact selector.
-	if rc.Replica.Namespace != "" && !strings.HasPrefix(node.GetNamespace(), rc.Replica.Namespace) {
+	if rc.Replica.Namespace != "" && node.GetNamespace() != rc.Replica.Namespace {
 		return node, nil
 	}
 	err := node.PipeE(fieldspec.Filter{
