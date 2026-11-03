@@ -131,9 +131,18 @@ type alphabeticalIDSorter struct {
 }
 
 func newAlphabeticalIDSorter(resources []*resource.Resource, options *types.AlphabeticalSortOptions) *alphabeticalIDSorter {
+	var fieldOrder []types.SortField
+	var caseInsensitive bool
+	if options != nil {
+		fieldOrder = options.FieldOrder
+		caseInsensitive = options.CaseInsensitive
+	}
+	if len(fieldOrder) == 0 {
+		fieldOrder = types.DefaultAlphabeticalFieldOrder()
+	}
 	s := &alphabeticalIDSorter{
-		fieldOrder:      options.FieldOrder,
-		caseInsensitive: options.CaseInsensitive,
+		fieldOrder:      fieldOrder,
+		caseInsensitive: caseInsensitive,
 	}
 	for _, res := range resources {
 		s.resids = append(s.resids, res.CurId())
