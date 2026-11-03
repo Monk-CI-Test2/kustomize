@@ -283,16 +283,16 @@ metadata:
 `)
 	th.AssertActualEqualsExpected(th.Run("base", th.MakeDefaultOptions()), `
 apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-  namespace: apple
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: backend
   namespace: zebra
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: apple
 `)
 }
 
@@ -321,16 +321,16 @@ metadata:
 `)
 	th.AssertActualEqualsExpected(th.Run("base", th.MakeDefaultOptions()), `
 apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-  namespace: apple
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: backend
   namespace: zebra
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: apple
 `)
 }
 

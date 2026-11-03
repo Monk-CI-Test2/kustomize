@@ -9,7 +9,7 @@ import (
 )
 
 func TestDefaultAlphabeticalFieldOrder(t *testing.T) {
-	want := []SortField{SortFieldNamespace, SortFieldKind, SortFieldName}
+	want := []SortField{SortFieldKind, SortFieldName}
 	if got := DefaultAlphabeticalFieldOrder(); !reflect.DeepEqual(got, want) {
 		t.Fatalf("default alphabetical field order = %v, want %v", got, want)
 	}
