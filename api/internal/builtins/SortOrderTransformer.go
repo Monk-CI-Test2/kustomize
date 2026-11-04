@@ -44,9 +44,13 @@ func (p *SortOrderTransformerPlugin) applyDefaults() {
 		}
 	}
 
-	if p.SortOptions.Order == types.AlphabeticalSortOrder && p.SortOptions.AlphabeticalSortOptions == nil {
-		p.SortOptions.AlphabeticalSortOptions = &types.AlphabeticalSortOptions{
-			FieldOrder: types.DefaultAlphabeticalFieldOrder(),
+	if p.SortOptions.Order == types.AlphabeticalSortOrder {
+		if p.SortOptions.AlphabeticalSortOptions == nil {
+			p.SortOptions.AlphabeticalSortOptions = &types.AlphabeticalSortOptions{
+				FieldOrder: types.DefaultAlphabeticalFieldOrder(),
+			}
+		} else if len(p.SortOptions.AlphabeticalSortOptions.FieldOrder) == 0 {
+			p.SortOptions.AlphabeticalSortOptions.FieldOrder = types.DefaultAlphabeticalFieldOrder()
 		}
 	}
 }
