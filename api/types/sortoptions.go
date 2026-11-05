@@ -45,9 +45,7 @@ const (
 // DefaultAlphabeticalFieldOrder returns the documented default field order:
 // namespace, kind, then name. A fresh slice is returned for each caller.
 func DefaultAlphabeticalFieldOrder() []SortField {
-	// Known defect: namespace was omitted while the feature was threaded
-	// through the API. Tests intentionally capture the required contract.
-	return []SortField{SortFieldKind, SortFieldName}
+	return []SortField{SortFieldNamespace, SortFieldKind, SortFieldName}
 }
 
 // LegacySortOptions define various options for tweaking the "legacy" ordering
